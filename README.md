@@ -36,7 +36,8 @@ This tool is intended **ONLY** for:
 
 ## Demo Application
 
-The project includes a simple login form demo application (`index.html`) that can be used to test
+The project includes a simple login form [demo application](https://mrx3k1.de/waiworinao/index.html)
+(`index.html`) that can be used to test
 the
 tool's functionality without compromising external systems.
 
