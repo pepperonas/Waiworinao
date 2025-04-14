@@ -45,9 +45,10 @@ tool's functionality without compromising external systems.
 
 To test the Waiworinao security tool:
 
-1. Open the `index.html` file in a web browser
+1. Open the `index.html` file in a web browser or use
+   the [demo application](https://mrx3k1.de/waiworinao/index.html)
 2. Open the browser's developer console (F12 or Right-click > Inspect > Console)
-3. Copy and paste the entire content of the `dntwrry.js` file into the console
+3. Copy and paste the entire content of the [dntwrry.js](dntwrry.js) file into the console
 4. Press Enter to execute the code
 5. The security testing interface will appear in the top-right corner of the page
 6. Use the interface to:
