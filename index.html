@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waiworinao</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #2C2E3B;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #f1f1f1;
+        }
+
+        .login-container {
+            background-color: #3A3D4D;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            max-width: 90%;
+            transition: all 0.3s;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 300;
+            font-size: 28px;
+            color: #f1f1f1;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            background-color: #252733;
+            border-radius: 4px;
+            color: #f1f1f1;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            box-shadow: 0 0 0 2px #5e6ad2;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #b3b3cc;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #5e6ad2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background-color: #4a53b3;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 4px;
+            text-align: center;
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .success {
+            background-color: #2d8659;
+            color: white;
+            opacity: 1;
+            height: auto;
+            padding: 12px;
+        }
+
+        .error {
+            background-color: #b33a3a;
+            color: white;
+            opacity: 1;
+            height: auto;
+            padding: 12px;
+        }
+
+        .login-attempt {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #252733;
+            border-radius: 4px;
+        }
+
+        .login-attempt h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #b3b3cc;
+        }
+
+        .login-attempt p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <h1>Waiworinao</h1>
+    <form id="login-form">
+        <div class="input-group">
+            <label for="username">Benutzername</label>
+            <input type="text" id="username" name="username" autocomplete="off" required>
+        </div>
+        <div class="input-group">
+            <label for="password">Passwort</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit">Anmelden</button>
+        <div id="message" class="message"></div>
+    </form>
+    <div id="login-attempt" class="login-attempt">
+        <h3>Letzter Login-Versuch</h3>
+        <p>Benutzername: <span id="attempt-username">-</span></p>
+        <p>Passwort: <span id="attempt-password">-</span></p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('login-form');
+        const message = document.getElementById('message');
+
+        const attemptUsername = document.getElementById('attempt-username');
+        const attemptPassword = document.getElementById('attempt-password');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Anzeigen des Login-Versuchs
+            attemptUsername.textContent = username;
+            attemptPassword.textContent = password;
+
+            if (username === 'rock' && password === 'you') {
+                message.textContent = 'Login erfolgreich!';
+                message.className = 'message success';
+            } else {
+                message.textContent = 'Ungültiger Benutzername oder Passwort!';
+                message.className = 'message error';
+            }
+        });
+    });
+</script>
+</body>
+</html>
