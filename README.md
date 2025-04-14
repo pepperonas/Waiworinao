@@ -128,6 +128,6 @@ The tool works by:
 ---
 
 *Side note: The project name "Waiworinao" comes from Ricardo Villalobos' track of the same
-name [https://youtu.be/8FvoJ-HahyQ?si=2oFKp5_lhRhewnh7](https://youtu.be/8FvoJ-HahyQ?si=2oFKp5_lhRhewnh7).
+name [https://www.youtube.com/watch?v=8FvoJ-HahyQ](https://www.youtube.com/watch?v=8FvoJ-HahyQ).
 The name is a play on words, essentially
 meaning "Why worry now?"*
