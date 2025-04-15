@@ -27,7 +27,7 @@
         const header = document.createElement('div');
         header.innerHTML = `
       <h2 style="margin: 0 0 15px 0; font-size: 18px; display: flex; justify-content: space-between; align-items: center;">
-        <span>Security Test Tool</span>
+        <span>Brute-Force-Test</span>
         <button id="security-tool-toggle" style="background: none; border: none; color: white; cursor: pointer; font-size: 20px;">−</button>
       </h2>
     `;
