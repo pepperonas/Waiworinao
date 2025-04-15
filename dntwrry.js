@@ -270,6 +270,11 @@
             
             <div id="password-list-section" style="margin-bottom: 10px;">
               <label style="display: block; margin-bottom: 5px;">Passwort-Liste:</label>
+              <div style="display: flex; margin-bottom: 5px;">
+                <input type="file" id="password-file" accept=".txt" style="flex-grow: 1;">
+                <button id="load-password-file" style="background-color: #4a6ed3; color: white; border: none; border-radius: 4px; padding: 0 10px; cursor: pointer; margin-left: 5px;">Laden</button>
+              </div>
+              <div id="file-info" style="font-size: 12px; margin-bottom: 5px; color: #aaa; display: none;">Datei geladen: <span id="file-name"></span> (<span id="password-count">0</span> Passwörter)</div>
               <textarea id="bf-password-list" style="width: 100%; height: 80px; padding: 5px; border-radius: 4px;" 
                         placeholder="Ein Passwort pro Zeile"></textarea>
             </div>
@@ -342,6 +347,37 @@
         if (passwordFields.length > 0 && usernameFields.length > 0) {
             let running = false;
             let stopRequested = false;
+
+            // Datei-Upload-Funktionalität
+            document.getElementById('load-password-file').addEventListener('click', function() {
+                const fileInput = document.getElementById('password-file');
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    updateStatus('Fehler: Keine Datei ausgewählt!', true);
+                    return;
+                }
+
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    const passwords = content.split(/\r?\n/).filter(line => line.trim() !== '');
+
+                    document.getElementById('bf-password-list').value = passwords.join('\n');
+                    document.getElementById('file-info').style.display = 'block';
+                    document.getElementById('file-name').textContent = file.name;
+                    document.getElementById('password-count').textContent = passwords.length;
+
+                    updateStatus(`Passwort-Liste geladen: ${passwords.length} Passwörter aus ${file.name}`, false);
+                };
+
+                reader.onerror = function() {
+                    updateStatus('Fehler beim Lesen der Datei!', true);
+                };
+
+                reader.readAsText(file);
+            });
 
             // Toggle zwischen Passwort-Liste und Zeichensatz-Methode
             document.getElementById('bf-method').addEventListener('change', function () {
@@ -551,7 +587,7 @@
                     const passwordListText = document.getElementById('bf-password-list').value.trim();
 
                     if (!passwordListText) {
-                        updateStatus('Fehler: Bitte Passwort-Liste eingeben!', true);
+                        updateStatus('Fehler: Bitte Passwort-Liste eingeben oder Datei laden!', true);
                         return;
                     }
 

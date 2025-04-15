@@ -36,7 +36,7 @@ This tool is intended **ONLY** for:
 
 ## Demo Application
 
-The project includes a simple login form [demo application](https://mrx3k1.de/waiworinao/index.html)
+The project includes a simple login form
 (`index.html`) that can be used to test
 the
 tool's functionality without compromising external systems.
@@ -46,9 +46,10 @@ tool's functionality without compromising external systems.
 To test the Waiworinao security tool:
 
 1. Open the `index.html` file in a web browser or use
-   the [demo application](https://mrx3k1.de/waiworinao/index.html)
+   the <a href="https://mrx3k1.de/waiworinao/index.html" target="_blank">demo application</a>
 2. Open the browser's developer console (F12 or Right-click > Inspect > Console)
-3. Copy and paste the entire content of the [dntwrry.js](dntwrry.js) file into the console
+3. Copy and paste the entire content of the <a href="dntwrry.js" target="_blank">dntwrry.js</a> file
+   into the console
 4. Press Enter to execute the code
 5. The security testing interface will appear in the top-right corner of the page
 6. Use the interface to:
