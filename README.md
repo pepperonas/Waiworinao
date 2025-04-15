@@ -18,6 +18,8 @@ ethical security testing purposes.
   combinations
 - **Visual Feedback**: Provides real-time status updates on testing progress
 - **Interactive UI**: Draggable interface with toggle functionality for better usability
+- **Large Password List Support**: Capable of processing large password lists like rockyou.txt
+- **Password List Sources**: Can load password lists from URLs or local files
 
 ## Technical Details
 

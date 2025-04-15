@@ -4,6 +4,7 @@
 (function () {
     // Haupt-Container für unser Tool erstellen
     const createToolContainer = () => {
+        // Bestehender Code bleibt unverändert
         const container = document.createElement('div');
         container.id = 'security-test-tool';
         container.style.cssText = `
@@ -90,7 +91,7 @@
     // Tool-Container erstellen
     const contentArea = createToolContainer();
 
-    // Scanner für Formularfelder
+    // Scanner für Formularfelder (bestehender Code)
     const scanForFields = () => {
         // Alle Eingabefelder finden
         const allInputs = document.querySelectorAll('input, textarea, select');
@@ -140,7 +141,7 @@
         return formFields;
     };
 
-    // Formulare scannen
+    // Formulare scannen (bestehender Code)
     const scanForms = () => {
         const forms = document.querySelectorAll('form');
         const formList = [];
@@ -162,6 +163,64 @@
         });
 
         return formList;
+    };
+
+    // Hilfsfunktion zum Laden einer Datei von einer URL
+    const loadFileFromUrl = async (url, progressCallback) => {
+        try {
+            // Stream-Verarbeitung für große Dateien
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP-Fehler: ${response.status}`);
+            }
+
+            const contentLength = response.headers.get('Content-Length');
+            const totalSize = contentLength ? parseInt(contentLength) : undefined;
+            let loaded = 0;
+            let text = '';
+
+            // Reader für den Response-Body erstellen
+            const reader = response.body.getReader();
+
+            // Lese die Daten in Chunks
+            while (true) {
+                const {done, value} = await reader.read();
+
+                if (done) break;
+
+                // Chunk verarbeiten
+                loaded += value.length;
+
+                // Text zum Ergebnis hinzufügen
+                const chunk = new TextDecoder().decode(value, {stream: true});
+                text += chunk;
+
+                // Fortschritt melden
+                if (progressCallback && totalSize) {
+                    const progress = Math.round((loaded / totalSize) * 100);
+                    progressCallback(progress, loaded, totalSize);
+                }
+            }
+
+            // Passwörter durch Zeilenumbrüche teilen
+            const passwords = text.split(/\r?\n/).filter(line => line.trim() !== '');
+
+            return {
+                success: true,
+                data: passwords,
+                text: text,
+                count: passwords.length
+            };
+        } catch (error) {
+            console.error('Fehler beim Laden der URL:', error);
+            return {
+                success: false,
+                error: error.message,
+                data: [],
+                count: 0
+            };
+        }
     };
 
     // UI erstellen
@@ -269,14 +328,52 @@
             </div>
             
             <div id="password-list-section" style="margin-bottom: 10px;">
-              <label style="display: block; margin-bottom: 5px;">Passwort-Liste:</label>
-              <div style="display: flex; margin-bottom: 5px;">
-                <input type="file" id="password-file" accept=".txt" style="flex-grow: 1;">
-                <button id="load-password-file" style="background-color: #4a6ed3; color: white; border: none; border-radius: 4px; padding: 0 10px; cursor: pointer; margin-left: 5px;">Laden</button>
+              <label style="display: block; margin-bottom: 5px;">Passwort-Quelle:</label>
+              <div style="margin-bottom: 10px;">
+                <select id="password-source" style="width: 100%; padding: 5px; border-radius: 4px;">
+                  <option value="local">Lokale Datei</option>
+                  <option value="url">URL (für große Dateien)</option>
+                  <option value="manual">Manuell eingeben</option>
+                </select>
               </div>
-              <div id="file-info" style="font-size: 12px; margin-bottom: 5px; color: #aaa; display: none;">Datei geladen: <span id="file-name"></span> (<span id="password-count">0</span> Passwörter)</div>
-              <textarea id="bf-password-list" style="width: 100%; height: 80px; padding: 5px; border-radius: 4px;" 
+              
+              <!-- Lokale Datei Option -->
+              <div id="local-file-section">
+                <div style="display: flex; margin-bottom: 5px;">
+                  <input type="file" id="password-file" accept=".txt" style="flex-grow: 1;">
+                  <button id="load-password-file" style="background-color: #4a6ed3; color: white; border: none; border-radius: 4px; padding: 0 10px; cursor: pointer; margin-left: 5px;">Laden</button>
+                </div>
+                <div id="file-info" style="font-size: 12px; margin-bottom: 5px; color: #aaa; display: none;">
+                  Datei geladen: <span id="file-name"></span> (<span id="password-count">0</span> Passwörter)
+                </div>
+              </div>
+              
+              <!-- URL Option (NEU) -->
+              <div id="url-file-section" style="display: none;">
+                <div style="margin-bottom: 5px;">
+                  <input type="text" id="password-url" style="width: 75%; padding: 5px; border-radius: 4px;" 
+                         placeholder="https://beispiel.com/wordlist.txt">
+                  <button id="load-url-file" style="background-color: #4a6ed3; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; margin-left: 5px;">Laden</button>
+                </div>
+                <div id="url-loading-progress" style="display: none; margin-bottom: 5px;">
+                  <div style="height: 4px; width: 100%; background-color: #222; border-radius: 2px; overflow: hidden;">
+                    <div id="url-progress-bar" style="height: 100%; width: 0; background-color: #4a6ed3;"></div>
+                  </div>
+                  <div style="font-size: 11px; margin-top: 3px; display: flex; justify-content: space-between;">
+                    <span id="url-progress-text">0%</span>
+                    <span id="url-loaded-bytes">0 KB / ? KB</span>
+                  </div>
+                </div>
+                <div id="url-file-info" style="font-size: 12px; margin-bottom: 5px; color: #aaa; display: none;">
+                  URL geladen: <span id="url-file-name"></span> (<span id="url-password-count">0</span> Passwörter)
+                </div>
+              </div>
+              
+              <!-- Manuelle Eingabe -->
+              <div id="manual-entry-section" style="display: none;">
+                <textarea id="bf-password-list" style="width: 100%; height: 80px; padding: 5px; border-radius: 4px;" 
                         placeholder="Ein Passwort pro Zeile"></textarea>
+              </div>
             </div>
             
             <div id="charset-section" style="margin-bottom: 10px; display: none;">
@@ -318,7 +415,7 @@
             
             <div style="margin-bottom: 10px;">
               <label style="display: block; margin-bottom: 5px;">Verzögerung zwischen Versuchen (ms):</label>
-              <input type="number" id="bf-delay" style="width: 100%; padding: 5px; border-radius: 4px;" value="500">
+              <input type="number" id="bf-delay" style="width: 100%; padding: 5px; border-radius: 4px;" value="10">
             </div>
             
             <div style="display: flex; gap: 10px;">
@@ -347,9 +444,18 @@
         if (passwordFields.length > 0 && usernameFields.length > 0) {
             let running = false;
             let stopRequested = false;
+            let passwords = []; // Globale Variable für alle Passwörter
+
+            // Toggle zwischen den Passwort-Quellen
+            document.getElementById('password-source').addEventListener('change', function () {
+                const source = this.value;
+                document.getElementById('local-file-section').style.display = source === 'local' ? 'block' : 'none';
+                document.getElementById('url-file-section').style.display = source === 'url' ? 'block' : 'none';
+                document.getElementById('manual-entry-section').style.display = source === 'manual' ? 'block' : 'none';
+            });
 
             // Datei-Upload-Funktionalität
-            document.getElementById('load-password-file').addEventListener('click', function() {
+            document.getElementById('load-password-file').addEventListener('click', function () {
                 const fileInput = document.getElementById('password-file');
                 const file = fileInput.files[0];
 
@@ -360,11 +466,10 @@
 
                 const reader = new FileReader();
 
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     const content = e.target.result;
-                    const passwords = content.split(/\r?\n/).filter(line => line.trim() !== '');
+                    passwords = content.split(/\r?\n/).filter(line => line.trim() !== '');
 
-                    document.getElementById('bf-password-list').value = passwords.join('\n');
                     document.getElementById('file-info').style.display = 'block';
                     document.getElementById('file-name').textContent = file.name;
                     document.getElementById('password-count').textContent = passwords.length;
@@ -372,11 +477,63 @@
                     updateStatus(`Passwort-Liste geladen: ${passwords.length} Passwörter aus ${file.name}`, false);
                 };
 
-                reader.onerror = function() {
+                reader.onerror = function () {
                     updateStatus('Fehler beim Lesen der Datei!', true);
                 };
 
                 reader.readAsText(file);
+            });
+
+            // URL-Lade-Funktionalität (NEU)
+            document.getElementById('load-url-file').addEventListener('click', async function () {
+                const urlInput = document.getElementById('password-url');
+                const url = urlInput.value.trim();
+
+                if (!url) {
+                    updateStatus('Fehler: Keine URL eingegeben!', true);
+                    return;
+                }
+
+                // UI für den Ladevorgang vorbereiten
+                document.getElementById('url-loading-progress').style.display = 'block';
+                document.getElementById('url-progress-bar').style.width = '0%';
+                document.getElementById('url-progress-text').textContent = '0%';
+                document.getElementById('url-loaded-bytes').textContent = '0 KB / ? KB';
+                document.getElementById('url-file-info').style.display = 'none';
+                document.getElementById('load-url-file').disabled = true;
+
+                updateStatus('Lade Passwort-Liste von URL...', false);
+
+                try {
+                    // Fortschritts-Callback-Funktion
+                    const updateProgress = (progress, loaded, total) => {
+                        document.getElementById('url-progress-bar').style.width = `${progress}%`;
+                        document.getElementById('url-progress-text').textContent = `${progress}%`;
+
+                        const loadedKB = Math.round(loaded / 1024);
+                        const totalKB = total ? Math.round(total / 1024) : '?';
+                        document.getElementById('url-loaded-bytes').textContent = `${loadedKB} KB / ${totalKB} KB`;
+                    };
+
+                    // Datei von URL laden
+                    const result = await loadFileFromUrl(url, updateProgress);
+
+                    if (result.success) {
+                        passwords = result.data;
+
+                        document.getElementById('url-file-info').style.display = 'block';
+                        document.getElementById('url-file-name').textContent = url.split('/').pop() || url;
+                        document.getElementById('url-password-count').textContent = passwords.length;
+
+                        updateStatus(`Passwort-Liste von URL geladen: ${passwords.length} Passwörter`, false);
+                    } else {
+                        updateStatus(`Fehler beim Laden der URL: ${result.error}`, true);
+                    }
+                } catch (error) {
+                    updateStatus(`Fehler: ${error.message}`, true);
+                } finally {
+                    document.getElementById('load-url-file').disabled = false;
+                }
             });
 
             // Toggle zwischen Passwort-Liste und Zeichensatz-Methode
@@ -573,6 +730,7 @@
                 const username = document.getElementById('bf-username').value.trim();
                 const delay = parseInt(document.getElementById('bf-delay').value);
                 const method = document.getElementById('bf-method').value;
+                const passwordSource = document.getElementById('password-source').value;
 
                 if (!username) {
                     updateStatus('Fehler: Bitte Benutzernamen eingeben!', true);
@@ -583,17 +741,20 @@
                 let totalPasswords = 0;
 
                 if (method === 'list') {
-                    // Passwort-Liste verwenden
-                    const passwordListText = document.getElementById('bf-password-list').value.trim();
+                    // Je nach Quelle Passwörter bekommen
+                    if (passwordSource === 'manual') {
+                        const passwordListText = document.getElementById('bf-password-list').value.trim();
 
-                    if (!passwordListText) {
-                        updateStatus('Fehler: Bitte Passwort-Liste eingeben oder Datei laden!', true);
-                        return;
+                        if (!passwordListText) {
+                            updateStatus('Fehler: Bitte Passwort-Liste eingeben!', true);
+                            return;
+                        }
+
+                        passwords = passwordListText.split('\n').map(p => p.trim()).filter(p => p);
                     }
 
-                    const passwords = passwordListText.split('\n').map(p => p.trim()).filter(p => p);
                     if (passwords.length === 0) {
-                        updateStatus('Fehler: Keine gültigen Passwörter in der Liste!', true);
+                        updateStatus('Fehler: Keine gültigen Passwörter verfügbar!', true);
                         return;
                     }
 
