@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -134,20 +134,20 @@
     <h1>Waiworinao</h1>
     <form id="login-form">
         <div class="input-group">
-            <label for="username">Benutzername</label>
+            <label for="username">Username</label>
             <input type="text" id="username" name="username" autocomplete="off" required>
         </div>
         <div class="input-group">
-            <label for="password">Passwort</label>
+            <label for="password">Password</label>
             <input type="password" id="password" name="password" required>
         </div>
-        <button type="submit">Anmelden</button>
+        <button type="submit">Login</button>
         <div id="message" class="message"></div>
     </form>
     <div id="login-attempt" class="login-attempt">
-        <h3>Letzter Login-Versuch</h3>
-        <p>Benutzername: <span id="attempt-username">-</span></p>
-        <p>Passwort: <span id="attempt-password">-</span></p>
+        <h3>Last Login Attempt</h3>
+        <p>Username: <span id="attempt-username">-</span></p>
+        <p>Password: <span id="attempt-password">-</span></p>
     </div>
 </div>
 
@@ -165,15 +165,15 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            // Anzeigen des Login-Versuchs
+            // Display login attempt
             attemptUsername.textContent = username;
             attemptPassword.textContent = password;
 
             if (username === 'rock' && password === 'you') {
-                message.textContent = 'Login erfolgreich!';
+                message.textContent = 'Login successful!';
                 message.className = 'message success';
             } else {
-                message.textContent = 'Ungültiger Benutzername oder Passwort!';
+                message.textContent = 'Invalid username or password!';
                 message.className = 'message error';
             }
         });
