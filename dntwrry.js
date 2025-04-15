@@ -1,4 +1,4 @@
-// FormScanner.js - Copy this code into the browser console of your own application
+// Copy this code into the browser console of your own application
 // Warning: Use this tool only for ethical security testing on your own applications!
 
 (function () {
