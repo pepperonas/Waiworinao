@@ -266,6 +266,7 @@
               <select id="bf-method" style="width: 100%; padding: 5px; border-radius: 4px;">
                 <option value="list">Use password list</option>
                 <option value="charset">Use character set (all combinations)</option>
+                <option value="variations">Generate variations (leetspeak, capitalization, separators)</option>
               </select>
             </div>
             
@@ -330,6 +331,36 @@
               
               <div style="background-color: #2c2e3b; padding: 5px; border-radius: 4px; font-size: 12px; margin-bottom: 5px;">
                 <strong>Warning:</strong> Large character sets and lengths > 4 can be very slow and may freeze the browser.
+              </div>
+            </div>
+            
+            <div id="variations-section" style="margin-bottom: 10px; display: none;">
+              <div style="margin-bottom: 10px;">
+                <label style="display: block; margin-bottom: 5px;">Base password/phrase:</label>
+                <input type="text" id="base-phrase" style="width: 100%; padding: 5px; border-radius: 4px;" 
+                       placeholder="e.g., mr.noodles">
+              </div>
+              
+              <div style="margin-bottom: 10px;">
+                <label style="display: block; margin-bottom: 5px;">Variation options:</label>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                  <label style="display: flex; align-items: center;">
+                    <input type="checkbox" id="use-leetspeak" checked> Leetspeak
+                  </label>
+                  <label style="display: flex; align-items: center;">
+                    <input type="checkbox" id="use-separators" checked> Separator variations
+                  </label>
+                  <label style="display: flex; align-items: center;">
+                    <input type="checkbox" id="use-capitalization" checked> Capitalization
+                  </label>
+                </div>
+              </div>
+              
+              <button id="preview-variations" style="width: 100%; padding: 8px; background-color: #5a5a5a; color: white; 
+                     border: none; border-radius: 4px; cursor: pointer; margin-bottom: 5px;">Preview Variations</button>
+              
+              <div id="variations-preview" style="max-height: 150px; overflow-y: auto; background-color: #252733; 
+                     padding: 8px; border-radius: 4px; font-size: 12px; display: none;">
               </div>
             </div>
             
@@ -403,11 +434,176 @@
                 reader.readAsText(file);
             });
 
-            // Toggle between password list and character set method
+            // Preview variations button
+            const previewButton = document.getElementById('preview-variations');
+            if (previewButton) {
+                previewButton.addEventListener('click', function () {
+                    const basePhrase = document.getElementById('base-phrase').value.trim();
+                    if (!basePhrase) {
+                        updateStatus('Error: Please enter a base phrase!', true);
+                        return;
+                    }
+                    
+                    const options = {
+                        useLeetspeak: document.getElementById('use-leetspeak').checked,
+                        useSeparators: document.getElementById('use-separators').checked,
+                        useCapitalization: document.getElementById('use-capitalization').checked
+                    };
+                    
+                    const variations = generateAllVariations(basePhrase, options);
+                    const previewDiv = document.getElementById('variations-preview');
+                    
+                    previewDiv.innerHTML = `<strong>Generated ${variations.length} variations:</strong><br><br>` +
+                        variations.map(v => `• ${v}`).join('<br>');
+                    previewDiv.style.display = 'block';
+                    
+                    updateStatus(`Generated ${variations.length} variations for "${basePhrase}"`, false);
+                });
+            }
+
+            // Leetspeak mapping
+            const leetSpeakMap = {
+                'a': ['4', '@'],
+                'e': ['3'],
+                'i': ['1', '!'],
+                'o': ['0'],
+                's': ['5', '$'],
+                't': ['7'],
+                'l': ['1'],
+                'g': ['9'],
+                'z': ['2'],
+                'b': ['8']
+            };
+
+            // Generate leetspeak variations
+            const generateLeetSpeakVariations = (word) => {
+                const variations = new Set([word]);
+                
+                const generateVariation = (current, index) => {
+                    if (index >= current.length) {
+                        variations.add(current);
+                        return;
+                    }
+                    
+                    const char = current[index].toLowerCase();
+                    generateVariation(current, index + 1);
+                    
+                    if (leetSpeakMap[char]) {
+                        for (const replacement of leetSpeakMap[char]) {
+                            const newWord = current.slice(0, index) + replacement + current.slice(index + 1);
+                            generateVariation(newWord, index + 1);
+                        }
+                    }
+                };
+                
+                generateVariation(word, 0);
+                return Array.from(variations);
+            };
+
+            // Generate capitalization variations
+            const generateCapitalizationVariations = (word) => {
+                const variations = new Set();
+                
+                // All lowercase
+                variations.add(word.toLowerCase());
+                
+                // All uppercase
+                variations.add(word.toUpperCase());
+                
+                // First letter capitalized
+                variations.add(word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+                
+                // Title case (capitalize first letter of each word part)
+                const titleCase = word.replace(/\b\w/g, l => l.toUpperCase());
+                variations.add(titleCase);
+                
+                // Camel case variations
+                const parts = word.split(/[\s._-]/);
+                if (parts.length > 1) {
+                    // camelCase
+                    const camelCase = parts[0].toLowerCase() + parts.slice(1).map(p => 
+                        p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()
+                    ).join('');
+                    variations.add(camelCase);
+                    
+                    // PascalCase
+                    const pascalCase = parts.map(p => 
+                        p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()
+                    ).join('');
+                    variations.add(pascalCase);
+                }
+                
+                // Random capitalization patterns
+                const randomPatterns = [
+                    word => word.split('').map((c, i) => i % 2 === 0 ? c.toLowerCase() : c.toUpperCase()).join(''),
+                    word => word.split('').map((c, i) => i % 2 === 1 ? c.toLowerCase() : c.toUpperCase()).join('')
+                ];
+                
+                randomPatterns.forEach(pattern => variations.add(pattern(word)));
+                
+                return Array.from(variations);
+            };
+
+            // Generate separator variations
+            const generateSeparatorVariations = (phrase) => {
+                const variations = new Set();
+                
+                // Split by common separators
+                const parts = phrase.split(/[\s._-]+/);
+                
+                if (parts.length > 1) {
+                    // No separator
+                    variations.add(parts.join(''));
+                    
+                    // Common separators
+                    const separators = ['', '.', '_', '-', ' '];
+                    separators.forEach(sep => variations.add(parts.join(sep)));
+                    
+                    // Mixed separators for more than 2 parts
+                    if (parts.length > 2) {
+                        variations.add(parts[0] + '.' + parts.slice(1).join(''));
+                        variations.add(parts[0] + '_' + parts.slice(1).join(''));
+                        variations.add(parts[0] + parts.slice(1).join('_'));
+                    }
+                } else {
+                    variations.add(phrase);
+                }
+                
+                return Array.from(variations);
+            };
+
+            // Generate all variations combining leetspeak, capitalization, and separators
+            const generateAllVariations = (basePhrase, options = {useLeetspeak: true, useSeparators: true, useCapitalization: true}) => {
+                const allVariations = new Set();
+                
+                // First generate separator variations
+                const separatorVariations = options.useSeparators ? generateSeparatorVariations(basePhrase) : [basePhrase];
+                
+                separatorVariations.forEach(sepVar => {
+                    // Then generate capitalization variations
+                    const capVariations = options.useCapitalization ? generateCapitalizationVariations(sepVar) : [sepVar];
+                    
+                    capVariations.forEach(capVar => {
+                        // Add non-leetspeak version
+                        allVariations.add(capVar);
+                        
+                        // Generate leetspeak variations if enabled
+                        if (options.useLeetspeak) {
+                            const leetVariations = generateLeetSpeakVariations(capVar);
+                            leetVariations.forEach(leetVar => allVariations.add(leetVar));
+                        }
+                    });
+                });
+                
+                return Array.from(allVariations);
+            };
+
+            // Toggle between password list, character set, and variations method
             document.getElementById('bf-method').addEventListener('change', function () {
                 const method = this.value;
                 document.getElementById('password-list-section').style.display = method === 'list' ? 'block' : 'none';
                 document.getElementById('charset-section').style.display = method === 'charset' ? 'block' : 'none';
+                document.getElementById('variations-section').style.display = method === 'variations' ? 'block' : 'none';
             });
 
             // Helper function to generate passwords based on character set
@@ -636,7 +832,7 @@
                     };
 
                     totalPasswords = passwords.length;
-                } else {
+                } else if (method === 'charset') {
                     // Use character set
                     const charset = buildCharset();
                     const minLength = parseInt(document.getElementById('min-length').value);
@@ -673,6 +869,39 @@
 
                     passwordGenerator = createPasswordGenerator(charset, minLength, maxLength);
                     totalPasswords = count;
+                } else {
+                    // Use variations method
+                    const basePhrase = document.getElementById('base-phrase').value.trim();
+                    
+                    if (!basePhrase) {
+                        updateStatus('Error: Please enter a base phrase!', true);
+                        return;
+                    }
+                    
+                    const options = {
+                        useLeetspeak: document.getElementById('use-leetspeak').checked,
+                        useSeparators: document.getElementById('use-separators').checked,
+                        useCapitalization: document.getElementById('use-capitalization').checked
+                    };
+                    
+                    const variations = generateAllVariations(basePhrase, options);
+                    
+                    if (variations.length === 0) {
+                        updateStatus('Error: No variations generated!', true);
+                        return;
+                    }
+                    
+                    let currentIndex = 0;
+                    passwordGenerator = {
+                        next: function () {
+                            if (currentIndex >= variations.length) {
+                                return {done: true, value: null};
+                            }
+                            return {done: false, value: variations[currentIndex++]};
+                        }
+                    };
+                    
+                    totalPasswords = variations.length;
                 }
 
                 running = true;
