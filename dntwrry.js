@@ -93,8 +93,8 @@
 
     // Scanner for form fields (existing code)
     const scanForFields = () => {
-        // Find all input fields
-        const allInputs = document.querySelectorAll('input, textarea, select');
+        // Find all input fields including Angular Material
+        const allInputs = document.querySelectorAll('input, textarea, select, mat-input');
         const formFields = [];
 
         // Analyze fields by types and attributes
@@ -117,13 +117,26 @@
             } else if (name.toLowerCase().includes('user') ||
                 id.toLowerCase().includes('user') ||
                 placeholder.toLowerCase().includes('user') ||
-                classes.toLowerCase().includes('user')) {
-                fieldType = 'username';
-            } else if (name.toLowerCase().includes('email') ||
+                classes.toLowerCase().includes('user') ||
+                name.toLowerCase().includes('email') ||
                 id.toLowerCase().includes('email') ||
                 placeholder.toLowerCase().includes('email') ||
                 classes.toLowerCase().includes('email')) {
-                fieldType = 'email';
+                fieldType = 'username';
+            }
+
+            // Check Angular Material labels
+            const matFormField = input.closest('mat-form-field');
+            if (matFormField) {
+                const label = matFormField.querySelector('mat-label');
+                if (label) {
+                    const labelText = label.textContent.toLowerCase();
+                    if (labelText.includes('password')) {
+                        fieldType = 'password';
+                    } else if (labelText.includes('user') || labelText.includes('email')) {
+                        fieldType = 'username';
+                    }
+                }
             }
 
             formFields.push({
@@ -727,6 +740,25 @@
 
             // Helper function to check for success/failure
             const checkLoginStatus = () => {
+                // Check for URL change (common in SPAs)
+                const currentUrl = window.location.href;
+                if (currentUrl.includes('/search') || currentUrl.includes('/dashboard') || 
+                    currentUrl.includes('/profile') || currentUrl.includes('/admin')) {
+                    return 'success';
+                }
+
+                // Check for JWT token in localStorage/sessionStorage (common in modern apps)
+                try {
+                    const token = localStorage.getItem('token') || sessionStorage.getItem('token') ||
+                                 localStorage.getItem('jwt') || sessionStorage.getItem('jwt') ||
+                                 localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+                    if (token && token.length > 50) { // JWT tokens are typically long
+                        return 'success';
+                    }
+                } catch (e) {
+                    // Ignore localStorage errors
+                }
+
                 // Specific for the Waiworinao application
                 const messageElement = document.getElementById('message');
                 if (messageElement) {
@@ -738,23 +770,43 @@
                     }
                 }
 
+                // Angular Material specific checks
+                const matSnackBar = document.querySelector('simple-snack-bar');
+                if (matSnackBar) {
+                    const snackText = matSnackBar.textContent.toLowerCase();
+                    if (snackText.includes('login') || snackText.includes('welcome') || 
+                        snackText.includes('authentication successful')) {
+                        return 'success';
+                    }
+                    if (snackText.includes('invalid') || snackText.includes('failed') || 
+                        snackText.includes('error')) {
+                        return 'error';
+                    }
+                }
+
                 // General checks
                 // Look for elements with success/error classes or typical message texts
                 const successIndicators = [
                     '.success', '.alert-success', '[class*="success"]',
-                    '.message.success', '[data-success]'
+                    '.message.success', '[data-success]', '.mat-snack-bar-container',
+                    '.notification.success', '.toast.success', '.alert.alert-success'
                 ];
 
                 const errorIndicators = [
                     '.error', '.alert-danger', '.alert-error', '[class*="error"]',
-                    '.message.error', '[data-error]'
+                    '.message.error', '[data-error]', '.notification.error', 
+                    '.toast.error', '.alert.alert-danger'
                 ];
 
                 for (const selector of successIndicators) {
                     const elements = document.querySelectorAll(selector);
                     for (const el of elements) {
                         if (el.offsetParent !== null) { // Check if the element is visible
-                            return 'success';
+                            const text = el.textContent.toLowerCase();
+                            if (text.includes('success') || text.includes('welcome') || 
+                                text.includes('login') || text.includes('authenticated')) {
+                                return 'success';
+                            }
                         }
                     }
                 }
@@ -763,7 +815,11 @@
                     const elements = document.querySelectorAll(selector);
                     for (const el of elements) {
                         if (el.offsetParent !== null) { // Check if the element is visible
-                            return 'error';
+                            const text = el.textContent.toLowerCase();
+                            if (text.includes('invalid') || text.includes('failed') || 
+                                text.includes('error') || text.includes('incorrect')) {
+                                return 'error';
+                            }
                         }
                     }
                 }
@@ -772,13 +828,16 @@
                 const bodyText = document.body.innerText.toLowerCase();
                 if (bodyText.includes('login successful') ||
                     bodyText.includes('successfully logged in') ||
-                    bodyText.includes('welcome back')) {
+                    bodyText.includes('welcome back') ||
+                    bodyText.includes('authentication successful')) {
                     return 'success';
                 }
 
                 if (bodyText.includes('invalid username') ||
                     bodyText.includes('incorrect password') ||
-                    bodyText.includes('login failed')) {
+                    bodyText.includes('login failed') ||
+                    bodyText.includes('authentication failed') ||
+                    bodyText.includes('invalid credentials')) {
                     return 'error';
                 }
 
