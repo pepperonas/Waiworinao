@@ -16,9 +16,13 @@ ethical security testing purposes.
 - **Credential Testing**: Provides interface for testing username/password combinations
 - **Brute Force Testing**: Includes options for testing with password lists or character set
   combinations
+- **Password Variation Generator**: Creates intelligent password variations with leetspeak, 
+  capitalization, and common separators
+- **Auto-fill Username**: Automatically fills the username/email field when typing in the tool
 - **Visual Feedback**: Provides real-time status updates on testing progress
 - **Interactive UI**: Draggable interface with toggle functionality for better usability
 - **Large Password List Support**: Capable of processing large password lists like rockyou.txt
+- **Angular Support**: Enhanced compatibility with Angular applications (e.g., OWASP Juice Shop)
 
 ## Technical Details
 
@@ -26,6 +30,11 @@ ethical security testing purposes.
 - No external dependencies required
 - Modern UI with dark theme (using `#2C2E3B` color scheme)
 - Event simulation for compatibility with modern JavaScript frameworks
+- Password variations include:
+  - Leetspeak conversions (e.g., a→4, e→3, o→0)
+  - Capitalization patterns (first letter, all caps, camelCase)
+  - Common separators (_, -, ., !, @, #, $, %, &, *)
+  - Intelligent word combinations with variations
 
 ## Usage Warning
 
@@ -57,7 +66,11 @@ To test the Waiworinao security tool:
     - Scan for input fields and forms
     - Test the login functionality (use "rock" as username and "you" as password for successful
       login)
-    - Try the brute force testing features with different options
+    - Try the brute force testing features with different options:
+      - **Password List**: Test with a custom list of passwords
+      - **Character Set**: Generate all possible combinations from selected characters
+      - **Variations**: Generate intelligent variations with leetspeak, capitalization, and separators
+    - Click "Show Generated Passwords" to view all password variations (when using variations method)
 
 For security research purposes, you can also use the tool on your own web applications by copying
 the script into the console when viewing your application.
@@ -122,6 +135,8 @@ The tool works by:
 3. Allowing user-configurable testing parameters
 4. Simulating user interactions with the detected forms
 5. Monitoring for success/failure indicators
+6. Automatically filling username/email fields as you type
+7. Supporting Angular applications by finding and clicking specific login buttons (e.g., #loginButton)
 
 ## Project Structure
 
